@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mais Sabor | Premium Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFC107;
+            --primary-dark: #FFA000;
+            --secondary: #0F172A;
+            --accent: #EF4444;
+            --success: #10B981;
+            --bg: #F8FAFC;
+            --white: #ffffff;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background-color: var(--bg); color: var(--text-main); line-height: 1.6; overflow-x: hidden; padding-bottom: 80px; }
+
+        header {
+            background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover; background-position: center;
+            height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--white); text-align: center; border-bottom: 4px solid var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        header h1 { font-size: 32px; font-weight: 800; letter-spacing: -1px; text-transform: uppercase; margin-bottom: 5px; }
+        header p { font-size: 14px; opacity: 0.8; font-weight: 400; background: rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 50px; backdrop-filter: blur(5px); }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 25px 20px; }
+
+        /* Card GPS Melhorado */
+        .location-card {
+            background: #EFF6FF; border: 2px dashed #3B82F6; border-radius: 20px;
+            padding: 20px; margin-bottom: 25px; text-align: center; position: relative; overflow: hidden;
+        }
+        .btn-geo {
+            background: #3B82F6; color: white; border: none; padding: 12px 24px;
+            border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); transition: 0.2s; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-geo:active { transform: scale(0.95); }
+        .geo-error { color: #EF4444; font-size: 13px; margin-top: 10px; font-weight: 600; display: none; }
+        
+        /* Botão de Teste (Só aparece se der erro) */
+        .btn-manual-test {
+            background: transparent; color: #64748B; border: 1px solid #CBD5E1; 
+            margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 12px; 
+            cursor: pointer; display: none; width: 100%;
+        }
+
+        .section-title { 
+            font-size: 16px; font-weight: 800; margin: 35px 0 20px; color: var(--secondary); 
+            display: flex; align-items: center; gap: 12px;
+        }
+        .section-title span { background: var(--primary); width: 35px; height: 5px; border-radius: 10px; }
+
+        .product-card {
+            background: var(--white); border-radius: 24px; padding: 16px; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 18px; border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: var(--shadow); transition: all 0.3s;
+        }
+        
+        .product-img { width: 90px; height: 90px; border-radius: 18px; object-fit: cover; }
+        
+        .product-info { flex: 1; }
+        .product-info h3 { font-size: 16px; font-weight: 700; color: var(--secondary); margin-bottom: 4px; }
+        .product-info p { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3; }
+        .product-price { font-size: 17px; font-weight: 800; color: var(--success); }
+        
+        .btn-add-item {
+            background: var(--secondary); color: var(--white); border: none; width: 40px; height: 40px;
+            border-radius: 14px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        #cart-bar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px; background: var(--secondary);
+            padding: 18px 24px; border-radius: 20px; color: white;
+            display: none; justify-content: space-between; align-items: center;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4); z-index: 1000; cursor: pointer;
+        }
+
+        /* Modal e Checkout */
+        .modal {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content { 
+            background: var(--white); width: 85%; max-width: 380px; padding: 30px; 
+            border-radius: 28px; text-align: center; 
+        }
+
+        .checkout-view {
+            position: fixed; inset: 0; background: var(--bg); z-index: 3000; 
+            display: none; flex-direction: column; overflow-y: auto; padding: 20px;
+        }
+
+        .card-checkout { 
+            background: var(--white); border-radius: 20px; padding: 20px; 
+            margin-bottom: 15px; border: 1px solid #E2E8F0; 
+        }
+
+        input, select { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #F1F5F9; 
+            background: #F8FAFC; font-size: 15px; margin-bottom: 10px;
+        }
+
+        .btn-finish { 
+            background: var(--success); color: white; border: none; width: 100%; 
+            padding: 18px; border-radius: 16px; font-weight: 800; font-size: 16px; 
+            cursor: pointer; margin-top: 10px;
+        }
+
+        #toast { 
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+            background: var(--secondary); color: white; padding: 12px 24px; 
+            border-radius: 50px; font-size: 14px; font-weight: 600; display: none; z-index: 4000;
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast">Item adicionado!</div>
+
+<header>
+    <h1>MAIS SABOR</h1>
+    <p>Premium Delivery • Jarinu/SP</p>
+</header>
+
+<div class="container">
+    
+    <div class="location-card" id="gps-card">
+        <h3 style="color: #1E40AF; margin-bottom: 5px;">📍 Onde você está?</h3>
+        <p style="font-size: 13px; color: #64748B;">Necessário para calcular a taxa de entrega.</p>
+        
+        <button class="btn-geo" onclick="getLocation()">
+            <span>📡</span> <span id="btn-geo-text">Calcular Entrega</span>
+        </button>
+        
+        <div id="gps-error-msg" class="geo-error"></div>
+        
+        <button class="btn-manual-test" id="btn-simulate" onclick="simulateLocation()">
+            ⚠️ GPS falhou? Clique aqui para simular (Teste)
+        </button>
+
+        <div id="dist-result" style="display:none; margin-top:15px; animation: slideUp 0.3s;"></div>
+    </div>
+
+    <div class="section-title"><span></span> Nossas Marmitex</div>
+    
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Marmitex P</h3>
+            <p>Arroz, feijão, farofa, guarnição + carne.</p>
+            <span class="product-price">R$ 22,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Marmita P', 22, true)">+</button>
+    </div>
+
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1626082896492-766af4eb6501?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Marmitex M</h3>
+            <p>Arroz, feijão, farofa, guarnição + carne.</p>
+            <span class="product-price">R$ 26,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Marmita M', 26, true)">+</button>
+    </div>
+
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1543353071-873f17a7a088?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Marmitex G</h3>
+            <p>Arroz, feijão, farofa, guarnição + carne.</p>
+            <span class="product-price">R$ 30,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Marmita G', 30, true)">+</button>
+    </div>
+
+    <div class="section-title"><span></span> Especial de Quarta e Sábado</div>
+    
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Feijoada P</h3>
+            <p>Completa com pertences.</p>
+            <span class="product-price">R$ 25,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Feijoada P', 25, false)">+</button>
+    </div>
+
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Feijoada M</h3>
+            <p>Completa com pertences.</p>
+            <span class="product-price">R$ 28,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Feijoada M', 28, false)">+</button>
+    </div>
+
+    <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=300" class="product-img">
+        <div class="product-info">
+            <h3>Feijoada G</h3>
+            <p>Completa com pertences.</p>
+            <span class="product-price">R$ 32,00</span>
+        </div>
+        <button class="btn-add-item" onclick="initAdd('Feijoada G', 32, false)">+</button>
+    </div>
+</div>
+
+<div id="modal-carne" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 15px;">Escolha a Carne</h3>
+        <select id="select-carne" style="margin-bottom: 20px;">
+            <option value="Frango Assado">🍗 Frango Assado</option>
+            <option value="Bife Acebolado">🥩 Bife Acebolado</option>
+            <option value="Carne de Panela">🍲 Carne de Panela</option>
+            <option value="Calabresa">🌭 Calabresa Acebolada</option>
+        </select>
+        <button class="btn-finish" onclick="confirmProduct()">Confirmar</button>
+        <button onclick="closeModal()" style="margin-top: 15px; background: none; border: none; color: #64748B;">Cancelar</button>
+    </div>
+</div>
+
+<div id="cart-bar" onclick="showCheckout()">
+    <div style="display:flex; align-items:center; gap:10px">
+        <span id="cart-count" style="background: var(--primary); color: var(--secondary); padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 14px;">0</span>
+        <span style="font-weight: 600;">Ver Pedido</span>
+    </div>
+    <span id="cart-total-bar" style="font-weight: 800; font-size: 16px;">R$ 0,00</span>
+</div>
+
+<div id="checkout-view" class="checkout-view">
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <button onclick="hideCheckout()" style="background:white; border:none; width:40px; height:40px; border-radius:12px; font-size:18px; box-shadow: var(--shadow)">←</button>
+        <h2 style="font-weight: 800; font-size: 20px;">Finalizar Pedido</h2>
+    </div>
+
+    <div class="card-checkout" id="checkout-items"></div>
+
+    <div class="card-checkout">
+        <h4 style="margin-bottom:15px; color:var(--secondary)">📍 Entrega</h4>
+        <input type="text" id="user-name" placeholder="Seu Nome Completo">
+        <input type="text" id="user-address" placeholder="Endereço, Número e Bairro">
+        
+        <div id="tax-display-checkout" style="padding: 12px; background: #F0FDFA; border: 1px solid #10B981; border-radius: 10px; color: #047857; font-size: 13px; margin-top: 10px;">
+            ⚠️ Taxa não calculada. Volte e use o GPS.
+        </div>
+    </div>
+
+    <div class="card-checkout">
+        <h4 style="margin-bottom:15px; color:var(--secondary)">💳 Pagamento</h4>
+        <select id="payment-method">
+            <option value="Pix">Pix (Chave Celular)</option>
+            <option value="Cartão">Cartão de Crédito/Débito</option>
+            <option value="Dinheiro">Dinheiro (Precisa de Troco?)</option>
+        </select>
+    </div>
+
+    <div style="margin-top: auto; padding-bottom: 30px;">
+        <div style="display:flex; justify-content:space-between; font-size: 18px; font-weight: 800; margin-bottom: 15px; padding: 0 10px;">
+            <span>Total Final</span>
+            <span id="final-price">R$ 0,00</span>
+        </div>
+        <button class="btn-finish" onclick="sendOrder()">Enviar Pedido no WhatsApp 🚀</button>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    let currentItem = null;
+    let deliveryTax = 0;
+    let distanceKm = 0;
+    let locationFixed = false;
+
+    // Coordenadas Mais Sabor (Exemplo Jarinu/SP)
+    // Atualize aqui se tiver as coordenadas exatas do seu ponto
+    const RESTAURANT_LAT = -23.0905;
+    const RESTAURANT_LON = -46.6853;
+
+    window.onload = () => {
+        if(localStorage.getItem('ms_name')) document.getElementById('user-name').value = localStorage.getItem('ms_name');
+        if(localStorage.getItem('ms_address')) document.getElementById('user-address').value = localStorage.getItem('ms_address');
+    };
+
+    // --- SISTEMA DE GEOLOCALIZAÇÃO ROBUSTO ---
+    function getLocation() {
+        const btnText = document.getElementById('btn-geo-text');
+        const errorMsg = document.getElementById('gps-error-msg');
+        const btnSimulate = document.getElementById('btn-simulate');
+        
+        // Reset visual
+        errorMsg.style.display = 'none';
+        btnSimulate.style.display = 'none';
+        btnText.innerText = "Buscando satélites...";
+
+        // Verifica HTTPS
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            handleGpsError({ code: 999, message: "Site não seguro (HTTPS)" });
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            handleGpsError({ code: 998, message: "Navegador sem suporte a GPS" });
+            return;
+        }
+
+        const options = {
+            enableHighAccuracy: true, // Tenta usar GPS real
+            timeout: 10000,           // Espera no máximo 10s
+            maximumAge: 0             // Não usa cache antigo
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            successLocation, 
+            handleGpsError, 
+            options
+        );
+    }
+
+    function successLocation(position) {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+        
+        calculateDistance(userLat, userLon);
+    }
+
+    function handleGpsError(error) {
+        const btnText = document.getElementById('btn-geo-text');
+        const errorMsg = document.getElementById('gps-error-msg');
+        const btnSimulate = document.getElementById('btn-simulate');
+
+        btnText.innerText = "Tentar Novamente";
+        errorMsg.style.display = 'block';
+        btnSimulate.style.display = 'block'; // Mostra botão de fallback
+
+        let msg = "";
+        switch(error.code) {
+            case 1: msg = "Permissão negada. Ative a localização nas configurações do site."; break;
+            case 2: msg = "Sinal de GPS indisponível."; break;
+            case 3: msg = "O GPS demorou muito para responder."; break;
+            case 999: msg = "O GPS precisa de conexão segura (HTTPS)."; break;
+            default: msg = "Erro desconhecido no GPS.";
+        }
+        errorMsg.innerText = "❌ " + msg;
+    }
+
+    function calculateDistance(lat, lon) {
+        // Fórmula de Haversine Corrigida
+        const R = 6371; // Raio da Terra em km
+        const dLat = (lat - RESTAURANT_LAT) * Math.PI / 180;
+        const dLon = (lon - RESTAURANT_LON) * Math.PI / 180;
+        
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(RESTAURANT_LAT * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        
+        // Fator de correção de rota (1.4x) para aproximar da distância de rua
+        distanceKm = (R * c) * 1.4;
+
+        // Regra de Preços
+        if (distanceKm < 3) deliveryTax = 0;          // Grátis até 3km
+        else if (distanceKm < 6) deliveryTax = 5;     // 5 reais até 6km
+        else if (distanceKm < 10) deliveryTax = 10;   // 10 reais até 10km
+        else deliveryTax = 15;                        // 15 reais acima
+
+        updateGpsUI(true);
+    }
+
+    function simulateLocation() {
+        // Função para simular localização caso o GPS falhe (Fallback)
+        // Simula uma distância de 4.5km
+        distanceKm = 4.5;
+        deliveryTax = 5.00;
+        updateGpsUI(false);
+    }
+
+    function updateGpsUI(isRealGps) {
+        const resultDiv = document.getElementById('dist-result');
+        const btnText = document.getElementById('btn-geo-text');
+        const btn = document.querySelector('.btn-geo');
+        const taxCheckout = document.getElementById('tax-display-checkout');
+
+        locationFixed = true;
+        
+        btn.style.background = "#10B981";
+        btnText.innerText = "Localização Confirmada";
+        document.getElementById('gps-error-msg').style.display = 'none';
+        document.getElementById('btn-simulate').style.display = 'none';
+
+        const badge = isRealGps ? "📡 GPS Detectado" : "⚠️ Simulação Manual";
+
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div style="background:white; padding:12px; border-radius:12px; margin-top:10px; border:1px solid #BAE6FD; font-size:14px;">
+                <div style="font-size:12px; color:#64748B; margin-bottom:4px;">${badge}</div>
+                📏 <b>Distância Aprox:</b> ${distanceKm.toFixed(1)} km<br>
+                🚚 <b>Taxa de Entrega:</b> <span style="color:#10B981; font-weight:800">
+                    ${deliveryTax === 0 ? 'GRÁTIS' : 'R$ ' + deliveryTax.toFixed(2)}
+                </span>
+            </div>
+        `;
+
+        taxCheckout.innerHTML = `✅ Taxa definida: <b>${deliveryTax === 0 ? 'Grátis' : 'R$ '+deliveryTax.toFixed(2)}</b>`;
+        taxCheckout.style.borderColor = "#10B981";
+        taxCheckout.style.color = "#047857";
+        taxCheckout.style.background = "#ECFDF5";
+
+        renderCart();
+    }
+
+    // --- CARRINHO E INTERFACE ---
+
+    function initAdd(name, price, needsProtein) {
+        if (needsProtein) {
+            currentItem = { name, price };
+            document.getElementById('modal-carne').style.display = 'flex';
+        } else {
+            addToCart(name, price);
+        }
+    }
+
+    function confirmProduct() {
+        const protein = document.getElementById('select-carne').value;
+        addToCart(`${currentItem.name} (${protein})`, currentItem.price);
+        closeModal();
+    }
+
+    function addToCart(desc, price) {
+        cart.push({ desc, price });
+        showToast();
+        renderCart();
+    }
+
+    function renderCart() {
+        const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+        const total = subtotal + deliveryTax;
+
+        // Barra inferior
+        const cartBar = document.getElementById('cart-bar');
+        if (cart.length > 0) {
+            cartBar.style.display = 'flex';
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-total-bar').innerText = `Total: R$ ${total.toFixed(2)}`;
+        } else {
+            cartBar.style.display = 'none';
+        }
+
+        document.getElementById('final-price').innerText = `R$ ${total.toFixed(2)}`;
+
+        // Lista Checkout
+        const container = document.getElementById('checkout-items');
+        if (cart.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#94A3B8">Sua sacola está vazia.</p>';
+        } else {
+            container.innerHTML = cart.map((item, index) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #F1F5F9">
+                    <div style="font-size:14px; color:#334155">
+                        <b>${item.desc}</b><br>R$ ${item.price.toFixed(2)}
+                    </div>
+                    <button onclick="removeItem(${index})" style="background:#FEE2E2; color:#EF4444; border:none; padding:6px 12px; border-radius:8px; font-weight:700; font-size:12px;">X</button>
+                </div>
+            `).join('');
+        }
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+    function showToast() {
+        const t = document.getElementById('toast');
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
+    }
+
+    function showCheckout() { document.getElementById('checkout-view').style.display = 'flex'; }
+    function hideCheckout() { document.getElementById('checkout-view').style.display = 'none'; }
+    function closeModal() { document.getElementById('modal-carne').style.display = 'none'; }
+
+    function sendOrder() {
+        const name = document.getElementById('user-name').value;
+        const addr = document.getElementById('user-address').value;
+        const pay = document.getElementById('payment-method').value;
+        const total = document.getElementById('final-price').innerText;
+
+        if (!name || !addr) return alert("Por favor, preencha seu Nome e Endereço.");
+        if (cart.length === 0) return alert("Seu carrinho está vazio.");
+        if (!locationFixed) return alert("Por favor, calcule a taxa de entrega no botão do topo.");
+
+        localStorage.setItem('ms_name', name);
+        localStorage.setItem('ms_address', addr);
+
+        let msg = `*🍱 NOVO PEDIDO - MAIS SABOR*%0A%0A`;
+        cart.forEach(i => msg += `▪️ ${i.desc} - R$ ${i.price.toFixed(2)}%0A`);
+        
+        msg += `%0A🚚 *Taxa Entrega:* R$ ${deliveryTax.toFixed(2)} (${distanceKm.toFixed(1)}km)`;
+        msg += `%0A💰 *TOTAL:* ${total}`;
+        msg += `%0A%0A👤 *Cliente:* ${name}`;
+        msg += `%0A📍 *Endereço:* ${addr}`;
+        msg += `%0A💳 *Pagamento:* ${pay}`;
+
+        window.open(`https://wa.me/5511999999999?text=${msg}`, '_blank');
+    }
+</script>
+
+</body>
+</html>
